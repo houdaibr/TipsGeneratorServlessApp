@@ -1,21 +1,22 @@
-import {  GradientBackgroundCon } from '@/components/NewsGenerator/NewsGeneratorElements'
-import Head from 'next/head'
-import Image from 'next/image'
-import React, { useEffect, useState } from 'react'
-
-
-import { BackgroundImage1, BackgroundImage2, FooterCon, FooterLink, RedSpan, GenerateQuoteButton, GenerateQuoteButtonText, QuoteGeneratorCon, QuoteGeneratorInnerCon, QuoteGeneratorSubTitle, QuoteGeneratorTitle} from '@/components/NewsGenerator/NewsGeneratorElements'
-
-import Cloudy from '../assets/cloudy.png'
-import Cloudi from '../assets/cloudi.png'
-
-import { Amplify } from 'aws-amplify';
+import { GradientBackgroundCon } from '@/components/NewsGenerator/NewsGeneratorElements';
+import Head from 'next/head';
+import Image from 'next/image';
+import React, { useEffect, useState } from 'react';
+import { BackgroundImage1, BackgroundImage2, FooterCon, FooterLink, RedSpan, GenerateQuoteButton, GenerateQuoteButtonText, QuoteGeneratorCon, QuoteGeneratorInnerCon, QuoteGeneratorSubTitle, QuoteGeneratorTitle } from '@/components/NewsGenerator/NewsGeneratorElements';
+import Cloudy from '../assets/cloudy.png';
+import Cloudi from '../assets/cloudi.png';
 import { generateClient } from 'aws-amplify/api';
-import { generateAQuote, quotesQueryName } from '@/src/graphql/queries'
-
-import { GraphQLResult } from '@aws-amplify/api-graphql'
-
-
+import { quotesQueryName ,generateAQuote } from '@/src/graphql/queries';
+import { GraphQLResult } from '@aws-amplify/api-graphql';
+import QuoteGeneratorModal from "@/components/NewsGenerator";
+// interface for our appsync <> lambda JSON response
+interface GenerateAQuoteData {
+  generateAQuote: {
+    statusCode: number;
+    headers: { [key: string]: string };
+    body: string;
+  }
+}
 // interface for our DynamoDB object
 interface UpdateQuoteInfoData {
   id: string;
@@ -24,6 +25,7 @@ interface UpdateQuoteInfoData {
   createdAt: string;
   updatedAt: string;
 }
+
 // type guard for our fetch function
 function isGraphQLResultForquotesQueryName(response: any): response is GraphQLResult<{
   quotesQueryName: {
@@ -33,11 +35,14 @@ function isGraphQLResultForquotesQueryName(response: any): response is GraphQLRe
   return response.data && response.data.quotesQueryName && response.data.quotesQueryName.items;
 }
 
-
-
 export default function Home() {
-  const [numberOfQuotes, setNumberOfQuotes] = useState<Number | null>(0);
+  const [numberOfQuotes, setNumberOfQuotes] = useState<number | null>(0);
   const client = generateClient();
+  const [openGenerator, setOpenGenerator] = useState(false);
+  const [processingQuote, setProcessingQuote] = useState(false);
+
+  const [quoteReceived, setQuoteReceived] = useState<String | null>(null);
+
 
   const updateQuoteInfo = async () => {
     try {
@@ -46,8 +51,10 @@ export default function Home() {
         variables: {
           queryName: "Life",
         },
-      })
+      });
+
       console.log('response', response);
+
       // Create type guards
       if (!isGraphQLResultForquotesQueryName(response)) {
         throw new Error('Unexpected response from API.graphql');
@@ -59,23 +66,45 @@ export default function Home() {
 
       const receivedNumberOfQuotes = response.data.quotesQueryName.items[0].quotesGenerated;
       setNumberOfQuotes(receivedNumberOfQuotes);
-    
-
-     
-
-
     } catch (error) {
-      console.log('error getting quote data', error)
+      console.log('error getting quote data', error);
     }
-  }
+  };
 
   useEffect(() => {
     updateQuoteInfo();
-  }, [])
+  }, []);
+
+  // Functions for quote generator modal
+  const handleCloseGenerator = () => {
+    setOpenGenerator(false);
+  };
+
+  const handleOpenGenerator = async (e: React.SyntheticEvent) => {
+    e.preventDefault();
+    setOpenGenerator(true);
+    setProcessingQuote(true);
+    try {
+      // Run Lambda Function
+      const runFunction = "runFunction";
+      const runFunctionStringified = JSON.stringify(runFunction);
+      const response = await  client.graphql<GenerateAQuoteData>({
+        query: generateAQuote,
+        variables: {
+          input: runFunctionStringified,
+        },
+      });
 
 
 
 
+
+    }
+      catch (error) {
+        console.log('error generating quote:', error);
+        setProcessingQuote(false);
+      }
+    }
 
   return (
     <>
@@ -86,43 +115,58 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <GradientBackgroundCon>
+        {/* Quote Generator Modal Pop-Up */}
+        <QuoteGeneratorModal
+          open={openGenerator}
+          close={handleCloseGenerator}
+          processingQuote={processingQuote}
+          setProcessingQuote={setProcessingQuote}
+          quoteReceived={quoteReceived}
+          setQuoteReceived={setQuoteReceived}
 
-<QuoteGeneratorCon>
-<QuoteGeneratorInnerCon>
-  <QuoteGeneratorTitle>
-  Daily News Explorer: Your Source for Timely and Relevant Headlines  </QuoteGeneratorTitle>
-  <QuoteGeneratorSubTitle>
-  Exploring the latest headlines? Dive into a news card featuring a random current event or story provided by the <FooterLink href="https://newsapi.ai/" target="_blank" rel="noopener noreferrer">NewsAPI.ai</FooterLink> key.
-  </QuoteGeneratorSubTitle>
-  <GenerateQuoteButton>
-    <GenerateQuoteButtonText >
-      Get Latest News
-    </GenerateQuoteButtonText>
-  </GenerateQuoteButton>
-</QuoteGeneratorInnerCon>
-</QuoteGeneratorCon>
-
-
-
-      <BackgroundImage1 
-          src={Cloudi}
-          height="300"
-          alt="cloudybackground1"
         />
 
-        <BackgroundImage2 
-          src={Cloudy}
-          height="300"
-          alt="cloudybackground1"
-        />
-         <FooterCon>
+        <QuoteGeneratorCon>
+
+
+
+          <QuoteGeneratorInnerCon>
+
+
+
+
+            <QuoteGeneratorTitle>
+              Daily News Explorer: Your Source for Timely and Relevant Headlines
+            </QuoteGeneratorTitle>
+            <QuoteGeneratorSubTitle>
+              Exploring the latest headlines? Dive into a news card featuring a random current event or story provided by the{' '}
+              <FooterLink href="https://newsapi.ai/" target="_blank" rel="noopener noreferrer">
+                NewsAPI.ai
+              </FooterLink>{' '}
+              key.
+            </QuoteGeneratorSubTitle>
+            <GenerateQuoteButton onClick={handleOpenGenerator}>
+              <GenerateQuoteButtonText >
+                Get Latest News
+              </GenerateQuoteButtonText>
+            </GenerateQuoteButton>
+          </QuoteGeneratorInnerCon>
+        </QuoteGeneratorCon>
+
+        <BackgroundImage1 src={Cloudi} height="300" alt="cloudybackground1" />
+        <BackgroundImage2 src={Cloudy} height="300" alt="cloudybackground1" />
+
+        <FooterCon>
           <>
             News Generated: {numberOfQuotes}
             <br />
-            Developed with <RedSpan>♥</RedSpan> by <FooterLink href="" target="_blank" rel="noopener noreferrer"> @Houda </FooterLink>
+            Developed with <RedSpan>♥</RedSpan> by{' '}
+            <FooterLink href="" target="_blank" rel="noopener noreferrer">
+              @Houda
+            </FooterLink>
           </>
         </FooterCon>
-              </GradientBackgroundCon>
+      </GradientBackgroundCon>
     </>
-  )
+  );
 }
