@@ -1,0 +1,29 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-inspirationaladvice-dev-01925-authRole",
+      "UnauthRoleArn": "arn:aws:iam::610745736948:role/amplify-inspirationaladvice-dev-01925-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::610745736948:role/amplify-inspirationaladvice-dev-01925-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-inspirationaladvice-dev-01925-deployment",
+      "UnauthRoleName": "amplify-inspirationaladvice-dev-01925-unauthRole",
+      "StackName": "amplify-inspirationaladvice-dev-01925",
+      "StackId": "arn:aws:cloudformation:us-east-1:610745736948:stack/amplify-inspirationaladvice-dev-01925/b8fd6e40-987b-11ee-acbf-0e03a3620857",
+      "AmplifyAppId": "d3mdr17i3majl8"
+    },
+    "categories": {
+      "auth": {
+        "inspirationaladvice365db92b": {}
+      },
+      "function": {
+        "inspoquoteLambda": {
+          "deploymentBucketName": "amplify-inspirationaladvice-dev-01925-deployment",
+          "s3Key": "amplify-builds/inspoquoteLambda-45754278464239416639-build.zip"
+        }
+      },
+      "api": {
+        "inspirationaladvice": {}
+      }
+    }
+  }
+}

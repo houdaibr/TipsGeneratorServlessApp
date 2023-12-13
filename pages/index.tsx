@@ -1,10 +1,15 @@
-import { GradientBackgroundCon } from '@/components/NewsGenerator/NewsGeneratorElements'
+import {  GradientBackgroundCon } from '@/components/NewsGenerator/NewsGeneratorElements'
 import Head from 'next/head'
 import Image from 'next/image'
+import React, { useEffect, useState } from 'react'
 
 
+import { BackgroundImage1, BackgroundImage2, FooterCon, FooterLink, RedSpan, GenerateQuoteButton, GenerateQuoteButtonText, QuoteGeneratorCon, QuoteGeneratorInnerCon, QuoteGeneratorSubTitle, QuoteGeneratorTitle} from '@/components/NewsGenerator/NewsGeneratorElements'
 
+import Cloudy from '../assets/cloudy.png'
+import Cloudi from '../assets/cloudi.png'
 export default function Home() {
+  const [numberOfQuotes, setNumberOfQuotes] = useState<Number | null>(0);
   return (
     <>
       <Head>
@@ -14,8 +19,43 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <GradientBackgroundCon>
-        
-      </GradientBackgroundCon>
+
+<QuoteGeneratorCon>
+<QuoteGeneratorInnerCon>
+  <QuoteGeneratorTitle>
+  Daily News Explorer: Your Source for Timely and Relevant Headlines  </QuoteGeneratorTitle>
+  <QuoteGeneratorSubTitle>
+  Exploring the latest headlines? Dive into a news card featuring a random current event or story provided by the <FooterLink href="https://newsapi.ai/" target="_blank" rel="noopener noreferrer">NewsAPI.ai</FooterLink> key.
+  </QuoteGeneratorSubTitle>
+  <GenerateQuoteButton>
+    <GenerateQuoteButtonText >
+      Get Latest News
+    </GenerateQuoteButtonText>
+  </GenerateQuoteButton>
+</QuoteGeneratorInnerCon>
+</QuoteGeneratorCon>
+
+
+
+      <BackgroundImage1 
+          src={Cloudi}
+          height="300"
+          alt="cloudybackground1"
+        />
+
+        <BackgroundImage2 
+          src={Cloudy}
+          height="300"
+          alt="cloudybackground1"
+        />
+         <FooterCon>
+          <>
+            News Generated: {numberOfQuotes}
+            <br />
+            Developed with <RedSpan>♥</RedSpan> by <FooterLink href="" target="_blank" rel="noopener noreferrer"> @Houda </FooterLink>
+          </>
+        </FooterCon>
+              </GradientBackgroundCon>
     </>
   )
 }
