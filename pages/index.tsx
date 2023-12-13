@@ -8,8 +8,75 @@ import { BackgroundImage1, BackgroundImage2, FooterCon, FooterLink, RedSpan, Gen
 
 import Cloudy from '../assets/cloudy.png'
 import Cloudi from '../assets/cloudi.png'
+
+import { Amplify } from 'aws-amplify';
+import { generateClient } from 'aws-amplify/api';
+import { generateAQuote, quotesQueryName } from '@/src/graphql/queries'
+
+import { GraphQLResult } from '@aws-amplify/api-graphql'
+
+
+// interface for our DynamoDB object
+interface UpdateQuoteInfoData {
+  id: string;
+  queryName: string;
+  quotesGenerated: number;
+  createdAt: string;
+  updatedAt: string;
+}
+// type guard for our fetch function
+function isGraphQLResultForquotesQueryName(response: any): response is GraphQLResult<{
+  quotesQueryName: {
+    items: [UpdateQuoteInfoData];
+  };
+}> {
+  return response.data && response.data.quotesQueryName && response.data.quotesQueryName.items;
+}
+
+
+
 export default function Home() {
   const [numberOfQuotes, setNumberOfQuotes] = useState<Number | null>(0);
+  const client = generateClient();
+
+  const updateQuoteInfo = async () => {
+    try {
+      const response = await client.graphql<UpdateQuoteInfoData>({
+        query: quotesQueryName,
+        variables: {
+          queryName: "Life",
+        },
+      })
+      console.log('response', response);
+      // Create type guards
+      if (!isGraphQLResultForquotesQueryName(response)) {
+        throw new Error('Unexpected response from API.graphql');
+      }
+
+      if (!response.data) {
+        throw new Error('Response data is undefined');
+      }
+
+      const receivedNumberOfQuotes = response.data.quotesQueryName.items[0].quotesGenerated;
+      setNumberOfQuotes(receivedNumberOfQuotes);
+    
+
+     
+
+
+    } catch (error) {
+      console.log('error getting quote data', error)
+    }
+  }
+
+  useEffect(() => {
+    updateQuoteInfo();
+  }, [])
+
+
+
+
+
   return (
     <>
       <Head>
