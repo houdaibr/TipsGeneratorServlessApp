@@ -41,7 +41,7 @@ export default function Home() {
   const [openGenerator, setOpenGenerator] = useState(false);
   const [processingQuote, setProcessingQuote] = useState(false);
 
-  const [quoteReceived, setQuoteReceived] = useState<String | null>(null);
+  const [quoteReceived, setQuoteReceived] = useState<String[] | null>(null);
 
 
   const updateQuoteInfo = async () => {
@@ -78,6 +78,8 @@ export default function Home() {
   // Functions for quote generator modal
   const handleCloseGenerator = () => {
     setOpenGenerator(false);
+    setProcessingQuote(false);
+    setQuoteReceived(null);
   };
 
   const handleOpenGenerator = async (e: React.SyntheticEvent) => {
@@ -96,6 +98,26 @@ export default function Home() {
       });
 
 
+
+      const responseStringified = JSON.stringify(response);
+
+      const responseReStringified = JSON.stringify(responseStringified);
+      const bodyIndex = responseReStringified.indexOf("body=") + 5;
+      const bodyAndBase64 = responseReStringified.substring(bodyIndex);
+      const bodyArray = bodyAndBase64.split(",");
+      const body = bodyArray[0];
+
+
+      console.log(body);
+
+    // Update the state with the received quote
+    setQuoteReceived(body);
+
+      // End state:
+      setProcessingQuote(false);
+
+      // Fetch if any new quotes were generated from counter
+      updateQuoteInfo();
 
 
 

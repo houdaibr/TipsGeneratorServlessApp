@@ -7,6 +7,7 @@ import { ImageBlobCon } from '../animations/AnimationElements';
 import { ModalCircularProgress, QuoteGeneratorModalCon, QuoteGeneratorModalInnerCon, QuoteGeneratorSubTitle, QuoteGeneratorTitle } from './NewsGeneratorElements';
 
 import AnimatedDownloadButton from '../animations/AnimatedDownloadButton';
+import RenderHtml from './renderSVG';
 
 
 
@@ -32,26 +33,36 @@ const QuoteGeneratorModal = ( {open, close,processingQuote,setProcessingQuote,qu
 
     const [blobUrl, setBlobUrl] = useState<string | null>(null);
     
-    
+    const [lines,setLines] = useState<string[] | null>(null);
     // Function: Handling the download of quote card
     const handleDownload = () => {
-        const link = document.createElement('a');
-        if (typeof blobUrl === 'string') {
-            link.href = blobUrl;
-            link.download = 'quote.png';
+        if (quoteReceived) {
+            // Create a Blob from the SVG markup
+            const blob = new Blob([quoteReceived], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+    
+            // Create a link and trigger the download
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'quote.svg'; // File name for download
+            document.body.appendChild(link);
             link.click();
+    
+            // Clean up
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
-    };
+    }
 
     // Function: Handle the receiving of quote card
     useEffect(() => {
         if (quoteReceived) {
             const binaryData = Buffer.from(quoteReceived, 'base64');
-            const blob = new Blob([binaryData], { type: 'image/png' });
+            const blob = new Blob([binaryData], { type: 'image/svg' });
             const blobUrlGenerated = URL.createObjectURL(blob);
             console.log(blobUrlGenerated);
             setBlobUrl(blobUrlGenerated);
-
+            setLines(quoteReceived)
             return () => {
                 URL.revokeObjectURL(blobUrlGenerated);
             }
@@ -91,7 +102,8 @@ const QuoteGeneratorModal = ( {open, close,processingQuote,setProcessingQuote,qu
                                 </QuoteGeneratorSubTitle>
                             </>
 }
-{quoteReceived === null && 
+{
+(quoteReceived !== null && lines !== null) &&
 <>
 <QuoteGeneratorTitle>
                                     Download your advice!
@@ -99,16 +111,14 @@ const QuoteGeneratorModal = ( {open, close,processingQuote,setProcessingQuote,qu
                                 <QuoteGeneratorSubTitle style={{marginTop: "20px"}}>
                                     See a preview:
                                 </QuoteGeneratorSubTitle>
-                                <ImageBlobCon>
-                                    <ImageBlob
-                                        quoteReceived={quoteReceived}
-                                        blobUrl={blobUrl}
-                                    />
-                                </ImageBlobCon>
+                               
                                 <AnimatedDownloadButton
                                     handleDownload={handleDownload}
                                 />
+                                <RenderHtml lines={lines}>
 
+                                </RenderHtml>
+                           
 </>}
 
 
@@ -122,4 +132,4 @@ const QuoteGeneratorModal = ( {open, close,processingQuote,setProcessingQuote,qu
     </Modal>
     )
 }
-export default QuoteGeneratorModal
+export default QuoteGeneratorModal;
